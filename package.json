@@ -1,0 +1,37 @@
+{
+  "name": "architect-autoloader",
+  "version": "0.0.1",
+  "description": "Autoload c9/architect plugins with a glob pattern",
+  "main": "index.coffee",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "dependencies": {
+    "architect": "^0.1.11",
+    "async": "^0.9.0",
+    "bluebird": "^2.2.2",
+    "glob": "^4.0.5",
+    "lodash": "^2.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tijhaart/architect-autoloader.git"
+  },
+  "keywords": [
+    "cloud9",
+    "architect",
+    "autoloader",
+    "promise"
+  ],
+  "author": "Raymond Tijhaar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tijhaart/architect-autoloader/issues"
+  },
+  "homepage": "https://github.com/tijhaart/architect-autoloader"
+}

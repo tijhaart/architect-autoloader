@@ -3,14 +3,12 @@ $promise 		=	require 'bluebird'
 $glob 			= require 'glob'
 $path 			= require 'path'
 $async 			= require 'async'
-_ 					= require 'lodash'
 
 findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
 			reject err if err
-
-			plugins = _.map plugins, (plugin)-> $path.dirname plugin
+			plugins = plugins.map (plugin)-> $path.dirname plugin
 			resolve plugins
 
 requirePlugins = (paths)->
