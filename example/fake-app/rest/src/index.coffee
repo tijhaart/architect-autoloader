@@ -8,14 +8,14 @@ module.exports =
 		App = ->
 			return this
 
-		app = new App()
-		server.app = app
+		rest = new App()
+		server.rest = rest
 
 		hub.on 'ready', ->
 			console.log
-				rest: app
+				rest: rest
 				server: server
 
 		register null,
 			rest:
-				app: app
+				app: rest
