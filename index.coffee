@@ -9,7 +9,7 @@ findPlugins = (glob)->
 		$glob glob, (err, plugins)->
 			reject err if err
 
-			plugins = plugins.map (plugin)-> $path.dirname plugin
+			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
 requirePlugins = (paths)->
@@ -17,7 +17,11 @@ requirePlugins = (paths)->
 
 		$async.map paths, (path, done)->
 			# console.log $path.resolve path
-			done null, require $path.resolve path
+			plugin = require resolvedPath = $path.resolve path
+			plugin.packagePath = resolvedPath
+
+			done null, plugin
+
 		, (err, plugins)->
 			reject err if err
 			resolve plugins
