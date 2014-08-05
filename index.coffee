@@ -8,7 +8,6 @@ findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
 			reject err if err
-
 			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
