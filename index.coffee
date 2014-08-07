@@ -8,11 +8,15 @@ findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
 			reject err if err
+			reject new Error "No plugins found for pattern : '#{glob}'" if not plugins.length
+			
 			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
 requirePlugins = (paths)->
 	new $promise (resolve, reject)->
+
+		reject new Error 'No plugins found' if not paths.length
 
 		$async.map paths, (path, done)->
 			# console.log $path.resolve path
@@ -40,7 +44,7 @@ autoloader = (glob, dirname)->
 			console.info '[autoloader] architect app ready'
 			return app
 		.catch (err)->
-			console.error '[autoloader] unable to create app due to error(s)'
+			console.error '[autoloader] unable to create Architect app due to error(s)'
 			throw err
 
 autoloader.findPlugins = findPlugins

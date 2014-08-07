@@ -17,7 +17,7 @@ module.exports =
 				console.log 'listening on port ' + server.port
 				# example that user assigned to app and app assigned to server is ready in time
 				console.log
-					"server.app.user": server.app.user
+					"server.rest.user": server.rest.user
 
 		register null,
 			"server.app": server
