@@ -9,9 +9,8 @@ findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
 			reject err if err
-
 			reject new Error "No plugins found for pattern : '#{glob}'" if not plugins.length
-
+			
 			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
