@@ -1,6 +1,6 @@
 {
   "name": "architect-autoloader",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Autoload c9/architect plugins with a glob pattern",
   "main": "index.coffee",
   "directories": {
