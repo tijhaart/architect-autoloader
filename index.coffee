@@ -2,11 +2,10 @@ $architect 	= require 'architect'
 $promise 		=	require 'bluebird'
 $glob 			= require 'glob'
 $path 			= require 'path'
-$async 			= require 'async'
 _ 					= require 'lodash'
 
 ###*
- * Find plugins based on a glob pattern e.g. /plugins/**/.plugin
+ * Find plugins based on a glob pattern e.g. "/plugins/**\/.plugin" (minus backslash)
  * 
  * @param  {String} glob Pattern
  * @return {Promise} A list of paths to found plugins
@@ -30,16 +29,10 @@ requirePlugins = (paths)->
 
 		reject new Error 'No plugins found' if not paths.length
 
-		$async.map paths, (path, done)->
-			# console.log $path.resolve path
+		$promise.map paths, (path)->
 			plugin = require resolvedPath = $path.resolve path
 			plugin.packagePath = resolvedPath
-
-			done null, plugin
-
-		, (err, plugins)->
-			reject err if err
-			resolve plugins
+			return plugin
 
 ###*
  * Create an Architect app
