@@ -2,9 +2,14 @@ $architect 	= require 'architect'
 $promise 		=	require 'bluebird'
 $glob 			= require 'glob'
 $path 			= require 'path'
-$async 			= require 'async'
 _ 					= require 'lodash'
 
+###*
+ * Find plugins based on a glob pattern e.g. "/plugins/**\/.plugin" (minus backslash)
+ * 
+ * @param  {String} glob Pattern
+ * @return {Promise} A list of paths to found plugins
+###
 findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
@@ -14,28 +19,54 @@ findPlugins = (glob)->
 			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
+###*
+ * Require plugins by the given paths. 
+ * @param  {Array} paths 
+ * @return {Promise}
+###
 requirePlugins = (paths)->
-	new $promise (resolve, reject)->
+	reject new Error 'No plugins found' if not paths.length
 
-		reject new Error 'No plugins found' if not paths.length
+	$promise.map paths, (path)->
+		plugin = require resolvedPath = $path.resolve path
+		plugin.packagePath = resolvedPath
+		return plugin
+	.catch (err)->
+		console.log err
 
-		$async.map paths, (path, done)->
-			# console.log $path.resolve path
-			plugin = require resolvedPath = $path.resolve path
-			plugin.packagePath = resolvedPath
+###*
+ * Create an Architect app
+ * 
+ * @param  {String} dirname	- Root directory where local Architect plugins are placed
+ * @param  {Boolean} options.resolvedApp - Returns app before ready and attaches the promise that resolves when the app is ready
+ * @return {Function} 
+###
+createApp = (dirname, options={})->
+	_.defaults options,
+		resolvedApp: true
 
-			done null, plugin
-
-		, (err, plugins)->
-			reject err if err
-			resolve plugins
-
-createApp = (dirname)->
+	###*
+	 * Promise an Architect app based on architect resolved plugins
+	 * @param  {Array} plugins A list of resolved Architect plugins (setup, provides, consumes)
+	 * @return {Promise}
+	###
 	(plugins)->
 		new $promise (resolve, reject)->
-			$architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
-				reject err if err
+			if options.resolvedApp
+				$architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
+					reject err if err
+					resolve app
+			else if not options.resolvedApp
+				appCreated = $promise.pending()
+
+				app = $architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
+					appCreated.reject app if err
+					appCreated.resolve app
+
+				app.$promise = appCreated.promise
 				resolve app
+			
+
 
 # Return a filtered dependency list that contain the services,
 # required by the provided services to function properly
@@ -90,10 +121,10 @@ inject = (plugins, services)->
 
 	return pluginList
 
-autoloader = (glob, dirname)->
+autoloader = (glob, dirname, createAppOpts)->
 	findPlugins(glob)
 		.then(requirePlugins)
-		.then(createApp dirname)
+		.then(createApp dirname, createAppOpts)
 		.then (app)->
 			console.info '[autoloader] architect app ready'
 			return app
