@@ -25,14 +25,14 @@ findPlugins = (glob)->
  * @return {Promise}
 ###
 requirePlugins = (paths)->
-	new $promise (resolve, reject)->
+	reject new Error 'No plugins found' if not paths.length
 
-		reject new Error 'No plugins found' if not paths.length
-
-		$promise.map paths, (path)->
-			plugin = require resolvedPath = $path.resolve path
-			plugin.packagePath = resolvedPath
-			return plugin
+	$promise.map paths, (path)->
+		plugin = require resolvedPath = $path.resolve path
+		plugin.packagePath = resolvedPath
+		return plugin
+	.catch (err)->
+		console.log err
 
 ###*
  * Create an Architect app
@@ -121,10 +121,10 @@ inject = (plugins, services)->
 
 	return pluginList
 
-autoloader = (glob, dirname)->
+autoloader = (glob, dirname, createAppOpts)->
 	findPlugins(glob)
 		.then(requirePlugins)
-		.then(createApp dirname)
+		.then(createApp dirname, createAppOpts)
 		.then (app)->
 			console.info '[autoloader] architect app ready'
 			return app
