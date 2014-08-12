@@ -2,11 +2,10 @@ $architect 	= require 'architect'
 $promise 		=	require 'bluebird'
 $glob 			= require 'glob'
 $path 			= require 'path'
-$async 			= require 'async'
 _ 					= require 'lodash'
 
 ###*
- * Find plugins based on a glob pattern e.g. /plugins/**/.plugin
+ * Find plugins based on a glob pattern e.g. "/plugins/**\/.plugin" (minus backslash)
  * 
  * @param  {String} glob Pattern
  * @return {Promise} A list of paths to found plugins
@@ -26,20 +25,14 @@ findPlugins = (glob)->
  * @return {Promise}
 ###
 requirePlugins = (paths)->
-	new $promise (resolve, reject)->
+	reject new Error 'No plugins found' if not paths.length
 
-		reject new Error 'No plugins found' if not paths.length
-
-		$async.map paths, (path, done)->
-			# console.log $path.resolve path
-			plugin = require resolvedPath = $path.resolve path
-			plugin.packagePath = resolvedPath
-
-			done null, plugin
-
-		, (err, plugins)->
-			reject err if err
-			resolve plugins
+	$promise.map paths, (path)->
+		plugin = require resolvedPath = $path.resolve path
+		plugin.packagePath = resolvedPath
+		return plugin
+	.catch (err)->
+		console.log err
 
 ###*
  * Create an Architect app
@@ -128,10 +121,10 @@ inject = (plugins, services)->
 
 	return pluginList
 
-autoloader = (glob, dirname)->
+autoloader = (glob, dirname, createAppOpts)->
 	findPlugins(glob)
 		.then(requirePlugins)
-		.then(createApp dirname)
+		.then(createApp dirname, createAppOpts)
 		.then (app)->
 			console.info '[autoloader] architect app ready'
 			return app
