@@ -5,6 +5,12 @@ $path 			= require 'path'
 $async 			= require 'async'
 _ 					= require 'lodash'
 
+###*
+ * Find plugins based on a glob pattern e.g. /plugins/**/.plugin
+ * 
+ * @param  {String} glob Pattern
+ * @return {Promise} A list of paths to found plugins
+###
 findPlugins = (glob)->
 	new $promise (resolve, reject)->
 		$glob glob, (err, plugins)->
@@ -14,6 +20,11 @@ findPlugins = (glob)->
 			plugins = plugins.map (plugin)-> $path.resolve $path.dirname plugin
 			resolve plugins
 
+###*
+ * Require plugins by the given paths. 
+ * @param  {Array} paths 
+ * @return {Promise}
+###
 requirePlugins = (paths)->
 	new $promise (resolve, reject)->
 
@@ -30,12 +41,39 @@ requirePlugins = (paths)->
 			reject err if err
 			resolve plugins
 
-createApp = (dirname)->
+###*
+ * Create an Architect app
+ * 
+ * @param  {String} dirname	- Root directory where local Architect plugins are placed
+ * @param  {Boolean} options.resolvedApp - Returns app before ready and attaches the promise that resolves when the app is ready
+ * @return {Function} 
+###
+createApp = (dirname, options={})->
+	_.defaults options,
+		resolvedApp: true
+
+	###*
+	 * Promise an Architect app based on architect resolved plugins
+	 * @param  {Array} plugins A list of resolved Architect plugins (setup, provides, consumes)
+	 * @return {Promise}
+	###
 	(plugins)->
 		new $promise (resolve, reject)->
-			$architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
-				reject err if err
+			if options.resolvedApp
+				$architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
+					reject err if err
+					resolve app
+			else if not options.resolvedApp
+				appCreated = $promise.pending()
+
+				app = $architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
+					appCreated.reject app if err
+					appCreated.resolve app
+
+				app.$promise = appCreated.promise
 				resolve app
+			
+
 
 # Return a filtered dependency list that contain the services,
 # required by the provided services to function properly
