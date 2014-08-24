@@ -60,7 +60,7 @@ createApp = (dirname, options={})->
 				appCreated = $promise.pending()
 
 				app = $architect.createApp ($architect.resolveConfig plugins, dirname), (err, app)->
-					appCreated.reject app if err
+					appCreated.reject err if err
 					appCreated.resolve app
 
 				app.$promise = appCreated.promise
@@ -101,8 +101,11 @@ inject = (plugins, services)->
 
 	services = [services] if _.isString services
 
-	pluginIndexes = _.reduce services, (pluginIndexes, serviceName)->
+	pluginIndexes = _.reduce services, getPluginIndexes = (pluginIndexes, serviceName)->
 		pluginIndex = getPluginIndex serviceName
+
+		throw new Error "Can't find service '#{serviceName}' \n\tIs the plugin path to the service valid?" if pluginIndex < 0
+
 		plugin = plugins[pluginIndex]		
 		dependencies.push pluginIndex
 
